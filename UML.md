@@ -50,6 +50,8 @@ classDiagram
     VolumeListener <|-- VolumeListenerWindows
 
     class Pipeline{
+        - float targetVolume
+        - boolean runPipeline
         +getTargetVolume() : float
         +setTargetVolume(float volume) : void
         +setParams(float kp, float ki, float kd, float maxI) : void
@@ -57,6 +59,7 @@ classDiagram
         +getTargetDevices() : String[]
         +getBuffer() : float[]
         +getSmoothedBuffer() : float[]
+        +setRunPipeline(boolean runPipeline) : void
     }
 
     Observer <|-- Pipeline
@@ -68,9 +71,8 @@ classDiagram
         - float maxI
         - float integral
         - float prevError
-        - float target
         +PID(float kp, float ki, float kd, float maxI)
-        +update(float error, float dt) : float
+        +getControl(float target, float volume, float dt) : float
         +setParams(float kp, float ki, float kd, float maxI) : void
     }
 
