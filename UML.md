@@ -87,8 +87,15 @@ classDiagram
         +getSmoothedBuffer() : float[]
     }
 
+    class GUI{
+        +run() : void
+        +refresh() : void
+    }
+
     Pipeline "1" *--> "1" PID : pid
     Pipeline "1" *--> "1" VolumeListener : volumeListener
     Pipeline "1" *--> "1" VolumeSetter : volumeSetter
     Pipeline "1" *--> "1" Buffer : buffer
+    Pipeline "1" *--> "1" GUI : gui
+    GUI "1" --> "1" Pipeline : pipeline
 ```
