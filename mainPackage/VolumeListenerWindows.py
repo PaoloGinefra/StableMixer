@@ -11,6 +11,7 @@ class VolumeListenerWindows(VolumeListener):
         self.rate = rate
         self.channels = channels
         self.chunk = chunk
+        self.isRunning = False
 
     def audio_callback(self, indata, frames, time, status):
         if status:
@@ -21,16 +22,19 @@ class VolumeListenerWindows(VolumeListener):
     def run(self):
         def listen():
             with sd.InputStream(samplerate=self.rate, channels=self.channels, device=self.getTargetDeviceIndex(), callback=self.audio_callback, blocksize=self.chunk):
-                print("Streaming... Press Ctrl+C to stop.")
-                while True:
+                while self.isRunning:
                     try:
                         sd.sleep(500)
                     except KeyboardInterrupt:
                         print("Stream stopped by user.")
                         break
 
+        self.isRunning = True
         volumeListeningThread = threading.Thread(target=listen)
         volumeListeningThread.start()
 
     def getAvailableDevices(self) -> List[str]:
         return sd.query_devices()
+
+    def stop(self):
+        self.isRunning = False

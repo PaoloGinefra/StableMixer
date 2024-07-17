@@ -18,3 +18,6 @@ class VolumeListener(Observed):
 
     def getAvailableDevices(self) -> List[str]:
         raise NotImplementedError
+
+    def stop(self):
+        raise NotImplementedError
