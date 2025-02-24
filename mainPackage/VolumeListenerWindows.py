@@ -12,6 +12,7 @@ class VolumeListenerWindows(VolumeListener):
         self.channels = channels
         self.chunk = chunk
         self.isRunning = False
+        self.volumeListeningThread: threading.Thread = None
 
     def audio_callback(self, indata, frames, time, status):
         if status:
@@ -24,17 +25,23 @@ class VolumeListenerWindows(VolumeListener):
             with sd.InputStream(samplerate=self.rate, channels=self.channels, device=self.getTargetDeviceIndex(), callback=self.audio_callback, blocksize=self.chunk):
                 while self.isRunning:
                     try:
-                        sd.sleep(500)
+                        sd.sleep(100)
                     except KeyboardInterrupt:
                         print("Stream stopped by user.")
                         break
 
         self.isRunning = True
-        volumeListeningThread = threading.Thread(target=listen)
-        volumeListeningThread.start()
+        self.volumeListeningThread = threading.Thread(target=listen)
+        self.volumeListeningThread.start()
 
     def getAvailableDevices(self) -> List[str]:
-        return sd.query_devices()
+        # convert to string list
+        deviceList = []
+        for device in sd.query_devices():
+            deviceList.append(str(device['name']))
+        return deviceList
 
     def stop(self):
         self.isRunning = False
+        self.volumeListeningThread.join()
+        sd.stop()

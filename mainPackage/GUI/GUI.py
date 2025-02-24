@@ -1,41 +1,65 @@
 import threading
 import time
-from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.slider import Slider
-from kivy.uix.checkbox import CheckBox
+from kivymd.app import MDApp
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.slider import MDSlider
+from kivymd.uix.selectioncontrol import MDCheckbox
 from kivy_garden.matplotlib import FigureCanvasKivyAgg
+from kivy.uix.dropdown import DropDown
+from kivy.uix.button import Button
 import matplotlib.pyplot as plt
 import numpy as np
 from kivy.clock import Clock
 import seaborn as sns
 
+from .LabeledWidget import LabeledWidget
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .Pipeline import Pipeline
+    from ..Pipeline import Pipeline
 
 
-class GUI(App):
+class GUI(MDApp):
     def __init__(self, pipeline: 'Pipeline') -> None:
         super().__init__()
         self.pipeline = pipeline
 
     def build(self):
-        layout = BoxLayout(orientation='vertical', padding=10,
-                           spacing=10)
+        self.theme_cls.theme_style = "Dark"
+        self.theme_cls.primary_palette = "Blue"
 
-        self.runPIDCheckbox = CheckBox(
+        layout = MDBoxLayout(orientation='vertical', padding=10, spacing=10)
+
+        self.availableDevices = self.pipeline.getAvailableDevices()
+        self.deviceMenu = DropDown()
+        for device in self.availableDevices:
+            btn = Button(text=device, size_hint_y=None, height=44)
+            index = self.availableDevices.index(device)
+            btn.bind(on_release=lambda btn: self.pipeline.setTargetDeciveIndex(
+                index))
+            self.deviceMenu.add_widget(btn)
+
+        # deviceButton = Button(text='Select Device', size_hint=(1, 0.1))
+        # deviceButton.bind(on_release=self.deviceMenu.open)
+        # layout.add_widget(deviceButton)
+
+        # def on_device_selected(instance, item):
+        #     self.pipeline.setTargetDeciveIndex(
+        #         self.availableDevices.index(item))
+        # self.deviceMenu.bind(on_release=on_device_selected)
+
+        self.runPIDCheckbox = MDCheckbox(
             active=True, size_hint=(1, 0.1))
-        layout.add_widget(self.runPIDCheckbox)
+        LabeledWidget("Run PID", self.runPIDCheckbox).addThisTo(layout)
 
         def on_checkbox_active(instance, value):
             self.pipeline.setPipelineRunning(value)
 
         self.runPIDCheckbox.bind(active=on_checkbox_active)
 
-        self.slider = Slider(min=0, max=20, value=5,
-                             step=0.1, size_hint=(1, 0.1))
-        layout.add_widget(self.slider)
+        self.slider = MDSlider(min=0, max=20, value=5,
+                               step=0.1, size_hint=(1, 0.1))
+        LabeledWidget("Target Volume", self.slider).addThisTo(layout)
 
         def on_slider_change(instance, value):
             self.pipeline.setTargetVolume(value)
@@ -44,7 +68,7 @@ class GUI(App):
 
         # Set a Seaborn theme
         sns.set_theme(style='darkgrid')
-
+        plt.tight_layout()
         self.fig, self.ax = plt.subplots()
 
         self.PcOutputVolumeLine, = self.ax.plot(
@@ -64,7 +88,6 @@ class GUI(App):
         return layout
 
     def update_plot(self, dt):
-
         # Update the plot with the new buffer data
         self.PcOutputVolumeLine.set_ydata(self.pipeline.buffer.getBuffer())
         self.targetVolumeLine.set_ydata(

@@ -1,5 +1,6 @@
 from .Observed import Observed
 from typing import List
+import time
 
 
 class VolumeListener(Observed):
@@ -15,6 +16,8 @@ class VolumeListener(Observed):
 
     def setTargetDeviceIndex(self, targetDeviceIndex: int):
         self.__targetDeviceIndex = targetDeviceIndex
+        self.stop()
+        self.run()
 
     def getAvailableDevices(self) -> List[str]:
         raise NotImplementedError

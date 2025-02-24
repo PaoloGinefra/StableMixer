@@ -5,14 +5,14 @@ from .VolumeListener import VolumeListener
 from .VolumeListenerWindows import VolumeListenerWindows
 from .Buffer import Buffer
 from .PID import PID
-from .GUI import GUI
+from .GUI.GUI import GUI
 import time
 
 
 class Pipeline(Observer):
     def __init__(self, targetVolume: float = 5, bufferSize: int = 1000) -> None:
         super().__init__()
-        self.PID: PID = PID(0.0005, 0.000001, 0, 10)
+        self.PID: PID = PID(0.001, 0, 0, 10)
         self.volumeSetter: VolumeSetterInterface = VolumeSetterWindows()
         self.volumeListener: VolumeListener = VolumeListenerWindows()
         self.buffer = Buffer(bufferSize)
